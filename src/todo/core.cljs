@@ -7,7 +7,11 @@
 
 ;; (println "This text is printed from src/todo/core.cljs. Go ahead and edit it and see reloading in action.")
 
-(defonce initial-state {:count 0})
+(def initial-state
+  {:count 0
+   :items [{:title "Foo" :done? false}
+           {:title "Bar" :done? false}
+           {:title "Baz" :done? false}]})
 
 ;; Views
 
@@ -25,12 +29,39 @@
                                  "Click me")))))
 (def counter (om/factory Counter))
 
-(defui MainTemplate
+(defui Item
+  static om/IQuery
+  (query [this]
+         [:title])
+  Object
+  (render [this]
+          (let [{:keys [title]} (om/props this)]
+            (dom/div nil
+                     (dom/span #js {:className "glyphicon glyphicon-ok"})
+                     " "
+                     (dom/span nil title)))))
+(def item (om/factory Item))
+
+(defui Todo
+  Object
+  (render [this]
+          (let [{:keys [items]} (om/props this)]
+            (dom/div #js {:className "row"}
+                     (dom/div #js {:className "col-md-offset-3 col-md-6"}
+                              (dom/div #js {:className "panel panel-default"}
+                                       (dom/div #js {:className "panel-heading"}
+                                                "Todo")
+                                       (dom/div #js {:className "panel-body"}
+                                                (apply dom/div nil
+                                                       (map item items)))))))))
+(def todo (om/factory Todo))
+
+(defui Main
   Object
   (render [this]
           (dom/div nil
-                   (dom/strong nil "Foo")
-                   (counter (om/props this)))))
+                   (counter (om/props this))
+                   (todo (om/props this)))))
 
 
 ;; Reconciler action
@@ -48,7 +79,7 @@
       {:value value}
       {:value :not-found})))
 
-(defonce reconciler
+(def reconciler
   (om/reconciler
    {:state initial-state
     :parser (om/parser {:read read :mutate mutate})}))
@@ -56,7 +87,7 @@
 ;; (om/transact! reconciler '[(increment)])
 
 (om/add-root! reconciler
-              MainTemplate (gdom/getElement "app"))
+              Main (gdom/getElement "app"))
 
 (defn on-js-reload []
 
