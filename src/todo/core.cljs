@@ -9,11 +9,8 @@
                 {:title "Abgeschlossene Items durchstreichen" :done? false}
                 {:title "Abgeschlossene Items ausgrauen" :done? false}
                 {:title "Per Klick Items abhaken" :done? true}
-                {:title "Formular für neue Items" :done? false}
-                {:title "Nach Kategorien sortieren" :done? false}
                 {:title "Fertig werden, weil alle nach Hause wollen" :done? false}
-                {:title "cljs / om f*** ups" :done? false}]
-   :todo/filter :all})
+                {:title "cljs / om f*** ups" :done? false}]})
 
 ;; -----------------------------------------------------------------------------
 ;; Parsing
@@ -37,7 +34,6 @@
   {:action (fn [] (do
                    (swap! state update-in [:todo/items] into {:todo/by-title value})
                    (swap! state update-in [:todo/by-title] assoc value {:title value :done? false})))})
-;; (om/transact! reconciler `[(todo/toggle {:title "Abgeschlossene Items durchstreichen" :done? true})])
 ;; (om/transact! reconciler `[(todo/add {:value "foo"})])
 
 ;; -----------------------------------------------------------------------------
@@ -101,8 +97,7 @@
 (defonce reconciler
   (om/reconciler
    {:state  init-data
-    :parser (om/parser {:read read
-                        :mutate mutate})}))
+    :parser (om/parser {:read read :mutate mutate})}))
 
 (om/add-root! reconciler
               Main (gdom/getElement "app"))
@@ -113,3 +108,8 @@
 ;; Normalisierte Daten liegen vor, wenn wir Ident definiert haben.
 ;; (def norm-data (om/tree->db Main init-data true))
 ;; norm-data
+
+;; Time Travelling
+;; (om/from-history reconciler #uuid "be4b73d9-06d1-4473-8100-5340a487f507")
+;; Aktueller Zustand
+;; (om/app-state reconciler)
