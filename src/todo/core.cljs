@@ -1,94 +1,86 @@
 (ns todo.core
   (:require [goog.dom :as gdom]
             [om.next :as om :refer-macros [defui]]
-            [om.dom :as dom :include-macros true]))
+            [om.dom :as dom]))
 
-(enable-console-print!)
+(def init-data
+  {:todo/items [{:title "Liste irgendwie darstellen" :done? false}
+                {:title "Abgeschlossene Items durchstreichen" :done? false}
+                {:title "Abgeschlossene Items ausgrauen" :done? false}
+                {:title "Per Klick Items abhaken" :done? false}
+                {:title "Formular für neue Items" :done? false}
+                {:title "Nach Kategorien sortieren" :done? false}]})
 
-;; (println "This text is printed from src/todo/core.cljs. Go ahead and edit it and see reloading in action.")
+;; -----------------------------------------------------------------------------
+;; Parsing
 
-(def initial-state
-  {:count 0
-   :items [{:title "Foo" :done? false}
-           {:title "Bar" :done? false}
-           {:title "Baz" :done? false}]})
-
-;; Views
-
-(defui Counter
-  static om/IQuery
-  (query [this]
-         [:count])
-  Object
-  (render [this]
-          (let [{:keys [count]} (om/props this)]
-            (dom/div nil
-                     (dom/span nil (str "Counter: " count))
-                     (dom/br nil)
-                     (dom/button #js {:onClick (fn [e] (om/transact! this '[(increment)]))}
-                                 "Click me")))))
-(def counter (om/factory Counter))
-
-(defui Item
-  static om/IQuery
-  (query [this]
-         [:title])
-  Object
-  (render [this]
-          (let [{:keys [title]} (om/props this)]
-            (dom/div nil
-                     (dom/span #js {:className "glyphicon glyphicon-ok"})
-                     " "
-                     (dom/span nil title)))))
-(def item (om/factory Item))
-
-(defui Todo
-  Object
-  (render [this]
-          (let [{:keys [items]} (om/props this)]
-            (dom/div #js {:className "row"}
-                     (dom/div #js {:className "col-md-offset-3 col-md-6"}
-                              (dom/div #js {:className "panel panel-default"}
-                                       (dom/div #js {:className "panel-heading"}
-                                                "Todo")
-                                       (dom/div #js {:className "panel-body"}
-                                                (apply dom/div nil
-                                                       (map item items)))))))))
-(def todo (om/factory Todo))
-
-(defui Main
-  Object
-  (render [this]
-          (dom/div nil
-                   (counter (om/props this))
-                   (todo (om/props this)))))
-
-
-;; Reconciler action
-
-(defmulti mutate om/dispatch)
-(defmethod mutate 'increment
-  [{:keys [state] :as env} key params]
-  {:action (fn [] (swap! state update-in [:count] inc))})
+(defn get-items [state key]
+  (let [st @state]
+    (into [] (map #(get-in st %)) (get st key))))
 
 (defmulti read om/dispatch)
-(defmethod read :default
+(defmethod read :todo/items
   [{:keys [state] :as env} key params]
-  (let [st @state]
-    (if-let [[_ value] (find st key)]
-      {:value value}
-      {:value :not-found})))
+  {:value (get-items state key)})
+
+(defmulti mutate om/dispatch)
+(defmethod mutate 'todo/toggle
+  [{:keys [state]} _ {:keys [title done?]}]
+  {:action (fn [] (swap! state update-in
+                        [:todo/by-title title :done?] #(not done?)))})
+
+;; -----------------------------------------------------------------------------
+;; Components
+
+(defui Item
+  static om/Ident
+  (ident [this {:keys [title]}]
+         [:todo/by-title title])
+  static om/IQuery
+  (query [this]
+         '[:title :done?])
+  Object
+  (render [this]
+          (let [{:keys [title done?] :as props} (om/props this)]
+            (dom/li nil
+                    (dom/button #js{:onClick
+                                    (fn [e](om/transact!
+                                           this `[(todo/toggle ~props)]))}
+                                "toggle")
+                    " "
+                    (dom/label nil (str title ", done? " done?))))))
+(def item (om/factory Item))
+
+(defui ListView
+  Object
+  (render [this]
+          (let [items (om/props this)]
+            (dom/ul nil
+                    (map item items)))))
+
+(def list-view (om/factory ListView))
+
+(defui RootView
+  static om/IQuery
+  (query [this]
+         `[{:todo/items ~(om/get-query Item)}])
+  Object
+  (render [this]
+          (let [{:keys [todo/items]} (om/props this)]
+            (list-view items))))
 
 (def reconciler
   (om/reconciler
-   {:state initial-state
+   {:state  init-data
     :parser (om/parser {:read read :mutate mutate})}))
-;; (om/from-history reconciler #uuid "59a52bf6-d45e-4bc6-abfa-c89018b97bba")
-;; (om/transact! reconciler '[(increment)])
 
 (om/add-root! reconciler
-              Main (gdom/getElement "app"))
+              RootView (gdom/getElement "app"))
 
-(defn on-js-reload []
 
-)
+;; -----------------------------------------------------------------------------
+;; Zum Analysieren
+
+;; Normalisierte Daten liegen vor, wenn wir Ident definiert haben.
+;; (def norm-data (om/tree->db RootView init-data true))
+;; norm-data
