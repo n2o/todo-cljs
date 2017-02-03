@@ -1,0 +1,271 @@
+<!doctype html>
+<html>
+  <head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>ClojureScript und om-next - Christian Meter</title>
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/hhu/hhu.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+		 var link = document.createElement( 'link' );
+		 link.rel = 'stylesheet';
+		 link.type = 'text/css';
+		 link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+		 document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+        <section data-state="footer">
+          <div id="title">
+            <h3>ClojureScript und om-next</h3>
+            <hr/>
+            <h5>Christian Meter</h5>
+            <h5><small>02.02.2017</small></h5>
+
+            <small>
+              Clojure Meetup Düsseldorf
+            </small>
+          </div>
+        </section>
+
+        <!-- Content -->
+        <section>
+          <h1><img class="inline" src="img/cljs.svg" style="max-width: 1em;"/> ClojureScript</h1>
+          <p>
+            Sehr ähnlich zu Clojure mit nur wenigen Unterschieden:
+          </p>
+          <ul>
+            <li>kompiliert nach JavaScript</li>
+            <li>JavaScript- statt Java-Interop</li>
+            <li>Einschränkungen bei Macros</li>
+            <li>Keine Refs, ...</li>
+          </ul>
+          <p>
+            ... aber wir können mit gängigen Webtechnologien arbeiten!
+          </p>
+        </section>
+
+        <section>
+          <h1>Das Web</h1>
+          <p>
+            hat sich stark verändert in den letzten Jahren:
+          </p>
+          <ul>
+            <li>einfache Frontendentwicklung</li>
+            <li>flexible Backends</li>
+            <li>saubere Schnittstellen</li>
+            <li>Mobile- / AI-first</li>
+          </ul>
+        </section>
+
+        <section>
+          <h1><img class="inline" src="img/react.svg" style="max-width: 1.3em;"/> <span style="color: #00d8ff;">React</span></h1>
+          <p>
+            Idee: Erzeuge einen virtuellen DOM, kleine Komponenten und rendere nur Änderungen
+          </p>
+          <p>
+            Ziel: Code nachvollziehbarer machen
+          </p>
+          <p>
+            Open Source, entwickelt von Facebook
+          </p>
+        </section>
+
+        <section>
+          <h1><img class="inline" src="img/react.svg" style="max-width: 1.3em;"/> <span style="color: #00d8ff;">React</span></h1>
+          <ul>
+            <li>JavaScript Bibliothek, kein Framework</li>
+            <li>Philosophie: <a href="https://www.youtube.com/watch?v=rI8tNMsozo0">"Simplicity Matters" <small>Rich Hickey</small></a></li>
+            <li>Aufteilung in <span class="highlight">Komponenten</span></li>
+            <ul>
+              <li>beinhalten ihren eigenen Zustand...</li>
+              <li>... ihre Logik...</li>
+              <li>... und ihr Aussehen...?</li>
+            </ul>
+          </ul>
+        </section>
+
+        <section>
+          <p>
+            <strong>Typisch</strong><br/>
+            Trennung in HTML, CSS und JavaScript Dateien
+          </p>
+          <p class="fragment">
+            <strong>React</strong><br/>
+            Was zu einer Komponente gehört, gehört auch in eine Datei<br/>
+            <small><a href="https://www.youtube.com/watch?v=x7cQ3mrcKaY">"React: Rethinking best practices"</a></small>
+          </p>
+        </section>
+
+        <section>
+          <p>
+            <strong>Problem</strong><br/>
+            Was / welcher Teil des Elements hat sich geändert?
+          </p>
+          <p>
+            <strong>Konventionelle Lösung</strong><br/>
+            Komplettes Element neu rendern
+          </p>
+
+          <p>&nbsp;</p>
+
+          <div class="fragment">
+            <p>
+              Viele Anpassungen am "echten" DOM sind rechen- und zeitintensiv...
+            </p>
+            <p>
+              ... aber nur bestimmte Elemente verändern geht schnell!
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <strong>Virtueller DOM</strong>
+          <p>
+            berechne <span class="highlight">Differenz</span> zwischen virtuellem und normalen DOM und rendere nur die Differenz neu
+          </p>
+          <img alt="" src="img/vdom.jpg" style="max-height: 8em; margin: 0;"/>
+          <p>
+            <small>Quelle: <a href="http://reactjs.de/posts/virtuelles-dom-mit-react-js">reactjs.de</a></small>
+          </p>
+        </section>
+
+        <section>
+          <img alt="" src="img/monkeys-slow.gif"/>
+          <p>
+            Links: React, rechts: Backbone. js
+          </p>
+          <small>Quelle: <a href="https://speakerdeck.com/joelburget/backbone-to-react">"Hack Reactor" - Joel Burget</a></small>
+        </section>
+
+        <section>
+          <span class="fragment fade-out">
+            <img alt="" src="img/angular-slow.gif"/>
+          </span>
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          <span class="fragment">
+            <img alt="" src="img/react-slow.gif"/>
+          </span>
+          <p>
+            <small>Quelle: <a href="http://reactjs.de/posts/virtuelles-dom-mit-react-js">reactjs.de</a></small>
+          </p>
+        </section>
+
+        <section>
+          <img alt="" src="img/angular-react-slow.gif"/>
+          <p>
+            <small>Quelle: <a href="http://reactjs.de/posts/virtuelles-dom-mit-react-js">reactjs.de</a></small>
+          </p>
+        </section>
+
+        <section>
+          <h1>
+            <img class="inline" src="img/react.svg" style="max-width: 2em;"/>
+            +
+            <img class="inline" src="img/cljs.svg" style="max-width: 1.8em;"/>
+          </h1>
+          <p>
+            &nbsp;
+          </p>
+          <div class="fragment">
+            <p>
+              Kombinieren wir beide Welten!
+            </p>
+            <ul>
+              <li>Reagent</li>
+              <li>Reframe</li>
+              <li class="fragment highlight-blue">om</li>
+              <li>...</li>
+            </ul>
+          </div>
+        </section>
+
+        <section>
+          <h1>om-next</h1>
+          <p>
+            Entwickelt von David Nolen
+          </p>
+          <p>
+            Mit weiteren Ideen zum globalen State-Management
+          </p>
+          <blockquote>
+            "Om is a ClojureScript library over Facebook's React." -- <a href="https://swannodette.github.io/todomvc/labs/architecture-examples/om/">Om</a>
+          </blockquote>
+        </section>
+
+        <section>
+          <h1>reconciler</h1>
+          <p>
+            State-Änderungen werden von Kontrollstrukturen entkoppelt und in eine <span class="highlight">Router-Abstraktion</span> überführt
+          </p>
+          <ul>
+            <li>Komponenten fordern Daten (reads)...</li>
+            <li>... oder State-Transitionen (mutations) an</li>
+          </ul>
+        </section>
+
+        <section>
+          <blockquote class="twitter-tweet" data-lang="de"><p lang="en" dir="ltr">React + ReactDOM production scripts are 53K.<br><br>ClojureScript (via Closure) can advance compile them to 32K<br><br>dead code elimination works</p>&mdash; David Nolen (@swannodette) <a href="https://twitter.com/swannodette/status/825384686629355520">28. Januar 2017</a></blockquote>
+        </section>
+
+        <section>
+          <blockquote class="twitter-tweet" data-lang="de"><p lang="en" dir="ltr"><a href="https://twitter.com/swannodette">@swannodette</a> We&#39;re looking into precompiling React with Closure before publishing to npm. Would that cause any issues for your set up?</p>&mdash; Sebastian Markbåge (@sebmarkbage) <a href="https://twitter.com/sebmarkbage/status/825385505009250304">28. Januar 2017</a></blockquote>
+        </section>
+
+        <section>
+          <h1>Coding</h1>
+          <p>
+            Die implementierte Beispielanwendung findet ihr auf <a href="https://github.com/n2o/todo-cljs">GitHub</a>
+          </p>
+          <img src="https://raw.githubusercontent.com/n2o/todo-cljs/master/img/todo.png" alt="todo-application" style="max-width: 411px;">
+        </section>
+
+        <section>
+          <h1>Nachlese</h1>
+          <ul>
+            <li><a href="https://facebook.github.io/react/">https://facebook.github.io/react/</a></li>
+            <li>reactjs.de</li>
+            <ul>
+              <li><a href="http://reactjs.de/posts/react-tutorial">React Einsteiger Tutorial</a></li>
+              <li><a href="http://reactjs.de/posts/virtuelles-dom-mit-react-js">Virtuelles DOM mit React.js</a></li>
+            </ul>
+            <li><a href="https://clojurescript.org/">ClojureScript</a></li>
+            <li><a href="https://github.com/omcljs/om">om</a></li>
+          </ul>
+        </section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+    <script src="js/widgets.js" charset="utf-8"></script>
+
+		<script>
+		 // More info https://github.com/hakimel/reveal.js#configuration
+		 Reveal.initialize({
+       controls: false,
+			 history: true,
+       center: true,
+//       slideNumber: true,
+       transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+			 // More info https://github.com/hakimel/reveal.js#dependencies
+			 dependencies: [
+				 /* { src: 'plugin/markdown/marked.js' },
+				    { src: 'plugin/markdown/markdown.js' },*/
+//				 { src: '../../plugin/notes/notes.js', async: true },
+//				 { src: '../../plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+			 ]
+		 });
+		</script>
+	</body>
+</html>
