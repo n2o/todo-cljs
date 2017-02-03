@@ -1,7 +1,7 @@
 {
   "name": "todo",
   "authors": [
-    "Christian Meter <meter@cs.uni-duesseldorf.de>"
+    "Christian Meter <cmeter@googlemail.com>"
   ],
   "description": "",
   "main": "",
@@ -17,7 +17,6 @@
     "tests"
   ],
   "dependencies": {
-    "bootstrap": "~3.3.7",
     "bootswatch-dist": "3.3.6-paper",
     "jquery": "~2"
   }
