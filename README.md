@@ -2,6 +2,8 @@
 
 Small todo-application using ClojureScript and om-next.
 
+![todo application](img/todo.png)
+
 ## Setup
 
 Install bower components:
