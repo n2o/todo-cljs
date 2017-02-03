@@ -1,5 +1,5 @@
 (defproject todo "0.1.0-SNAPSHOT"
-  :description "Implementing TodoMVC with om-next"
+  :description "Implementing a todo-app with om-next"
   :url "https://github.com/n2o/todomvc"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}

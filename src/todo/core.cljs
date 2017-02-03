@@ -4,13 +4,13 @@
             [om.dom :as dom]))
 
 (def init-data
-  {:count 0
+  {:counter 0
    :todo/items [{:title "Liste irgendwie darstellen" :done? true}
-                {:title "Abgeschlossene Items durchstreichen" :done? true}
-                {:title "Abgeschlossene Items ausgrauen" :done? true}
-                {:title "Per Klick Items abhaken" :done? true}
-                {:title "Fertig werden, weil alle nach Hause wollen" :done? false}
-                {:title "cljs / om f*** ups" :done? false}]})
+                {:title "Per Klick Items abhaken" :done? false}
+                {:title "Abgeschlossene Items ausgrauen" :done? false}
+                {:title "Abgeschlossene Items durchstreichen" :done? false}
+                {:title "Neue Items hinzufügen" :done? false}
+                {:title "Item :title zu nehmen scheint nicht sinnvoll zu sein..." :done? false}]})
 
 ;; -----------------------------------------------------------------------------
 ;; Parsing
@@ -31,30 +31,30 @@
 
 (defmulti mutate om/dispatch)
 (defmethod mutate 'todo/toggle
-  [{:keys [state]} _ {:keys [title done?]}]
-  {:action (swap! state update-in [:todo/by-title title :done?] #(not done?))})
+  [{:keys [state]} _ {:keys [title]}]
+  {:action (fn [] (swap! state update-in [:todo/by-title title :done?] not))})
 
 (defmethod mutate 'todo/add
   [{:keys [state]} _ {:keys [title]}]
   {:action (fn [] (swap! state create-item title))})
 
-;; (om/transact! reconciler '[(increment)])
-;; (om/transact! reconciler '[(todo/add {:title "foo2"})])
-
-
 ;; -----------------------------------------------------------------------------
 ;; Auxiliary
-
-(defn line-through [done?]
-  (if done?
-    #js {:textDecoration "line-through"}
-    #js {}))
 
 (defn add-item [this]
   (dom/input #js {:className "form-control"
                   :placeholder "Irgendwas wollte ich doch noch erledigen..."
+                  :style #js {:marginBottom "1em"}
                   :onKeyDown #(when (= (.-key %) "Enter")
-                                (om/transact! this `[(todo/add {:title ~(.. % -target -value)})]))}))
+                                (om/transact! this
+                                   `[(todo/add {:title ~(.. % -target -value)})]))}))
+
+(def footer
+  (dom/div #js {:className "text-muted"}
+           "Clojure Meetup Düsseldorf "
+           (dom/a #js {:href "https://twitter.com/clojure_dus"} "@clojure_dus")
+           (dom/a #js {:className "pull-right"
+                       :href "https://twitter.com/cmeter_"} "@cmeter_")))
 
 ;; -----------------------------------------------------------------------------
 ;; Components
@@ -68,13 +68,13 @@
          [:todo/by-title title])
   Object
   (render [this]
-          (let [{:keys [title done?] :as props} (om/props this)]
+          (let [{:keys [title done?]} (om/props this)]
             (dom/div nil
                      (dom/input #js {:type "checkbox"
                                      :checked done?
-                                     :onChange #(om/transact! this `[(todo/toggle ~props)])})
+                                     :onChange #(om/transact! this `[(todo/toggle {:title ~title})])})
                      (dom/span #js {:className (when done? "text-muted")
-                                    :style (line-through done?)}
+                                    :style (when done? #js {:textDecoration "line-through"})}
                                title)))))
 (def item (om/factory Item))
 
@@ -84,15 +84,16 @@
          `[{:todo/items ~(om/get-query Item)}])
   Object
   (render [this]
-          (let [{:keys [todo/items]} (om/props this)]
-            (dom/div #js {:className "panel panel-default"}
-                     (dom/div #js {:className "panel-heading"}
-                              "Todos")
-                     (dom/div #js {:className "panel-body"}
-                              (map item items)
-                              (add-item this))))))
+          (let [{:keys [:todo/items]} (om/props this)]
+            (dom/div nil
+                     (dom/div #js {:className "panel panel-default"}
+                              (dom/div #js {:className "panel-heading"} "Todos")
+                              (dom/div #js {:className "panel-body"}
+                                       (add-item this)
+                                       (map item items)))
+                     footer))))
 
-(def reconciler
+(defonce reconciler
   (om/reconciler
    {:state  init-data
     :parser (om/parser {:read read :mutate mutate})}))
@@ -107,11 +108,7 @@
 ;; norm-data
 
 ;; Time Travelling
-;; (om/from-history reconciler #uuid "719e70ad-cca7-467d-96f1-eea41a5648fd")
+;; (om/from-history reconciler #uuid "3a92181a-f24d-4a0e-8f05-548e2419e38a")
+
 ;; Aktueller Zustand
 ;; @(om/app-state reconciler)
-
-
-;; (defmethod mutate 'increment
-;;   [{:keys [state]} _ _]
-;;   {:action (fn [] (swap! state update-in [:count] inc))})
